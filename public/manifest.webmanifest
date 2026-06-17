@@ -1,0 +1,14 @@
+{
+  "name": "Expense Machine",
+  "short_name": "Expense Machine",
+  "description": "A premium financial operating system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F11",
+  "theme_color": "#0F0F11",
+  "icons": [
+    { "src": "/icon-dark-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-dark-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-dark-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

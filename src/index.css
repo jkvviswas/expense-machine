@@ -1,0 +1,281 @@
+/* ===========================================================================
+   Expense Machine — Design System V2 · Theme
+   Dark Editorial Luxury  (+ Light "Warm Paper" companion)
+
+   The dark palette below is the original, unchanged identity. Light mode is a
+   faithful companion in the SAME language (warm, brass-accented, one easing
+   curve) — not a redesign. Variables are the single styling source of truth,
+   mirrored by src/styles/tokens.ts for use in logic.
+   =========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* Geist Mono — reserved for financial figures (amounts, balances, KPIs,
+   percentages, analytics values). Self-hosted; gives money a precise,
+   premium-fintech register distinct from the editorial headings/body. */
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/GeistMono-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Shared, theme-independent tokens ---------------------------------- */
+:root {
+  --em-radius-control: 11px;
+  --em-radius-panel: 16px;
+  --em-radius-focal: 999px;
+  --em-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --em-sidebar-w: 264px;
+  --em-sidebar-collapsed-w: 76px;
+  --em-header-h: 68px;
+  --em-theme-dur: 480ms;
+}
+
+/* ---- DARK (original identity — values unchanged) ----------------------- */
+:root,
+[data-theme='dark'] {
+  /* === LUXURY FINANCE DARK — Expense Machine === */
+  --em-void: #0C0A07;
+  --em-ground: #14110E;
+  --em-surface: #1E1A16;
+  --em-elevated: #26211C;
+  --em-hairline: #3D3429;
+  --em-hairline-strong: #554840;
+
+  --em-bright: #F5F0E6;
+  --em-soft: #D8D0C2;
+  --em-muted: #9A9082;
+  --em-faint: #6E655A;
+
+  /* Warm Gold accent */
+  --em-brass: #D6B05A;
+  --em-brass-bright: #EAC870;
+  --em-brass-deep: #B38A3A;
+
+  --em-gain: #6EA07B;
+  --em-loss: #D07A68;
+  --em-watch: #E0B45C;
+
+  --em-glow-brass: rgba(214, 176, 90, 0.14);
+  --em-glow-focal: rgba(214, 176, 90, 0.20);
+
+  --em-grain-opacity: 0.35;
+
+  color-scheme: dark;
+}
+
+/* ---- LIGHT (warm paper — same identity, inverted ground) --------------- */
+[data-theme='light'] {
+  /* === LUXURY FINANCE LIGHT — Expense Machine === */
+  --em-void: #EDE9E0;
+  --em-ground: #F6F3EC;
+  --em-surface: #EEE8DC;
+  --em-elevated: #FFFFFF;
+  --em-hairline: #D8CDB9;
+  --em-hairline-strong: #BFB09A;
+
+  --em-bright: #1F1A14;
+  --em-soft: #3D3528;
+  --em-muted: #6F6558;
+  --em-faint: #A09080;
+
+  /* Warm Gold accent */
+  --em-brass: #8A6A2F;
+  --em-brass-bright: #B38A3A;
+  --em-brass-deep: #6A4E20;
+
+  --em-gain: #4F7A5A;
+  --em-loss: #B85C4B;
+  --em-watch: #C89B44;
+
+  --em-glow-brass: rgba(138, 106, 47, 0.10);
+  --em-glow-focal: rgba(138, 106, 47, 0.15);
+
+  --em-grain-opacity: 0.12;
+
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background-color: var(--em-ground);
+  color: var(--em-bright);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth, restrained theme transition on broad surfaces only (no layout). */
+body,
+.em-theme-tween,
+.em-theme-tween * {
+  transition:
+    background-color var(--em-theme-dur) var(--em-ease),
+    border-color var(--em-theme-dur) var(--em-ease),
+    color var(--em-theme-dur) var(--em-ease),
+    fill var(--em-theme-dur) var(--em-ease),
+    stroke var(--em-theme-dur) var(--em-ease);
+}
+
+.em-grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: var(--em-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+.em-halo {
+  /* Contain the decorative radial glow (110vw ::before, plus child accent
+     glows) so it never expands the document scroll width. overflow-x: clip
+     clips without creating a scroll container, leaving sticky/absolute
+     descendants unaffected. This is the root-cause fix for horizontal scroll —
+     not a blanket body overflow hide. */
+  overflow-x: clip;
+}
+.em-halo::before {
+  content: '';
+  position: absolute;
+  top: -22vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110vw;
+  height: 70vh;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at center, var(--em-glow-brass), transparent 55%);
+}
+
+.font-serif { font-family: 'Fraunces', Georgia, serif; }
+.font-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+/* Financial figures — Geist Mono with tabular, lining figures. Used for
+   amounts, balances, KPIs, percentages and analytics values only. */
+.font-num {
+  font-family: 'Geist Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--em-brass);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--em-hairline-strong);
+  border-radius: 999px;
+  border: 3px solid var(--em-ground);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--em-faint); }
+
+/* ---- Premium motion helpers (opt-in classes) --------------------------- */
+.em-lift {
+  transition:
+    transform 0.32s var(--em-ease),
+    box-shadow 0.32s var(--em-ease),
+    border-color 0.32s var(--em-ease);
+  will-change: transform;
+}
+.em-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -10px rgba(16,33,43,0.2), 0 0 0 1px var(--em-hairline);
+}
+
+.em-press { transition: transform 0.18s var(--em-ease); }
+.em-press:active { transform: scale(0.97); }
+
+@keyframes em-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(3vw, -2vh) scale(1.06); }
+}
+@keyframes em-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-2.5vw, 2.5vh) scale(1.1); }
+}
+.em-float-a { animation: em-float-a 18s var(--em-ease) infinite; }
+.em-float-b { animation: em-float-b 22s var(--em-ease) infinite; }
+
+/* Lumos — the wand-tip light gently breathes (scale + opacity only). */
+@keyframes em-lumos {
+  0%, 100% { transform: scale(0.92); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+.em-lumos { animation: em-lumos 3.2s ease-in-out infinite; }
+
+/* Custom round cursor: hide the system arrow so only the brass dot shows.
+   Text fields keep their native caret/I-beam for comfortable data entry. */
+.em-cursor-none,
+.em-cursor-none * {
+  cursor: none !important;
+}
+.em-cursor-none input,
+.em-cursor-none textarea,
+.em-cursor-none [contenteditable='true'],
+.em-cursor-none select {
+  cursor: auto !important;
+}
+/* The dot scales up briefly on press for tactile feedback (size only). */
+.em-cursor-dot { transition: width 140ms var(--em-ease), height 140ms var(--em-ease); }
+.em-dot-press { width: 0.9rem; height: 0.9rem; }
+
+@keyframes em-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.em-skeleton {
+  background: linear-gradient(90deg, var(--em-surface) 0%, var(--em-elevated) 50%, var(--em-surface) 100%);
+  background-size: 200% 100%;
+  animation: em-shimmer 1.6s linear infinite;
+  border-radius: var(--em-radius-control);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.42s;
+  animation-timing-function: var(--em-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none !important; }
+}
+
+::selection { background: var(--em-brass-deep); color: var(--em-bright); }
