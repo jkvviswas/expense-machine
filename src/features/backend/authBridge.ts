@@ -128,3 +128,26 @@ export async function bridgeRequestPasswordReset(email: string): Promise<Result<
   if (error) return { configured: true, ok: false, message: error.message };
   return { configured: true, ok: true, value: null };
 }
+
+/**
+ * After a user clicks the reset link in their email, Supabase establishes a
+ * temporary "recovery" session. Returns true if such a session exists — i.e.
+ * the user arrived from a valid, unexpired reset link and may set a new password.
+ */
+export async function bridgeHasRecoverySession(): Promise<Result<boolean>> {
+  if (!isBackendConfigured()) return { configured: false };
+  const supabase = await getSupabase();
+  if (!supabase) return { configured: false };
+  const { data } = await supabase.auth.getSession();
+  return { configured: true, ok: true, value: !!data.session };
+}
+
+/** Set a new password for the user in the current (recovery) session. */
+export async function bridgeUpdatePassword(newPassword: string): Promise<Result<null>> {
+  if (!isBackendConfigured()) return { configured: false };
+  const supabase = await getSupabase();
+  if (!supabase) return { configured: false };
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) return { configured: true, ok: false, message: error.message };
+  return { configured: true, ok: true, value: null };
+}

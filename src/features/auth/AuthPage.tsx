@@ -23,6 +23,7 @@ export function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [devResetLink, setDevResetLink] = useState<string | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
 
@@ -36,8 +37,9 @@ export function AuthPage() {
     (async () => {
       try {
         if (mode === 'forgot') {
-          const { resetUrl } = await authStore.requestPasswordReset(email);
+          const { resetUrl, emailSent: sent } = await authStore.requestPasswordReset(email);
           setForgotSent(true);
+          setEmailSent(!!sent);
           // Local/dev fallback surfaces the link directly; with a backend the
           // reset is delivered by email and no link is returned.
           setDevResetLink(resetUrl ?? null);
@@ -237,6 +239,15 @@ export function AuthPage() {
                     </a>
                     <p className="mt-3 text-[0.74rem] text-muted">
                       This link expires in 30 minutes and can only be used once.
+                    </p>
+                  </>
+                ) : emailSent ? (
+                  <>
+                    <p className="mb-2 font-medium text-bright">Check your email</p>
+                    <p className="text-muted">
+                      If an account exists for <strong className="text-soft">{email}</strong>,
+                      a password reset link is on its way. Open it from your inbox to set a new
+                      password. The link expires shortly, so use it soon.
                     </p>
                   </>
                 ) : (

@@ -297,12 +297,12 @@ export const authStore = {
    * "send" it via `emailService`. Always resolves without revealing whether
    * the email exists, to avoid account enumeration.
    */
-  async requestPasswordReset(email: string): Promise<{ resetUrl?: string }> {
+  async requestPasswordReset(email: string): Promise<{ resetUrl?: string; emailSent?: boolean }> {
     const trimmed = email.trim().toLowerCase();
     // Cloud: ask Supabase to send the reset email; never reveal account existence.
     if (bridgeConfigured()) {
       const res = await bridgeRequestPasswordReset(trimmed);
-      if (res.configured) return {}; // Supabase delivers via email; no dev link
+      if (res.configured) return { emailSent: true }; // Supabase delivers via email
     }
     const account = readAccounts().find((a) => a.email === trimmed);
     if (!account) return {}; // do not reveal account existence
