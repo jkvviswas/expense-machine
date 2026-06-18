@@ -8,7 +8,8 @@ import { LedgerTable } from './components/LedgerTable';
 import { DetailDrawer } from './components/DetailDrawer';
 import { BulkBar } from './components/BulkBar';
 import { LedgerSkeleton, LedgerEmpty, NoResults } from './components/States';
-import { applyFilters, sortTransactions, activeFilterCount, totals, toCSV, downloadCSV } from './filters';
+import { applyFilters, sortTransactions, activeFilterCount, totals } from './filters';
+import { exportTransactionsXlsx } from './exportXlsx';
 import { emptyFilters } from './types';
 import type { Category, Transaction, FilterState } from './types';
 import { accountById } from './data';
@@ -79,7 +80,7 @@ export function TransactionsPage() {
   const exportSelection = useCallback(() => {
     const chosen = filtered.filter((t) => selected.has(t.id));
     const rows = chosen.length > 0 ? chosen : filtered;
-    downloadCSV('expense-machine-transactions.csv', toCSV(rows));
+    void exportTransactionsXlsx(rows);
   }, [filtered, selected]);
 
   const deleteOne = useCallback((t: Transaction) => {
