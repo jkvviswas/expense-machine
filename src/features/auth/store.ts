@@ -1,6 +1,14 @@
 import { useSyncExternalStore } from 'react';
 import { persist } from '../../lib/persist';
 import { emailService } from '../../lib/email';
+import {
+  bridgeConfigured,
+  bridgeRegister,
+  bridgeLogin,
+  bridgeLogout,
+  bridgeCurrentUser,
+  bridgeRequestPasswordReset,
+} from '../backend/authBridge';
 
 /**
  * ============================================================================
@@ -185,6 +193,57 @@ export const authStore = {
     emit();
   },
 
+  // --- Cloud-aware async methods --------------------------------------------
+  // When a Supabase backend is configured these use real cloud accounts (so the
+  // same login works on any device). When it is NOT configured they fall back to
+  // the local implementation above, preserving the offline-first contract.
+
+  /** Register via Supabase when configured, else local. */
+  async registerAsync(name: string, email: string, password: string, username?: string): Promise<AuthUser> {
+    const trimmedName = name.trim();
+    const trimmedUsername = (username?.trim() || trimmedName);
+    if (bridgeConfigured()) {
+      const res = await bridgeRegister(trimmedName, email, password, trimmedUsername);
+      if (res.configured) {
+        if (res.ok) {
+          state = { user: res.value, ready: true };
+          emit();
+          return res.value;
+        }
+        throw new AuthError(res.message);
+      }
+    }
+    // Fallback: local
+    return this.register(name, email, password, username);
+  },
+
+  /** Login via Supabase when configured, else local. */
+  async loginAsync(identifier: string, password: string): Promise<AuthUser> {
+    if (bridgeConfigured()) {
+      const res = await bridgeLogin(identifier, password);
+      if (res.configured) {
+        if (res.ok) {
+          state = { user: res.value, ready: true };
+          emit();
+          return res.value;
+        }
+        throw new AuthError(res.message);
+      }
+    }
+    // Fallback: local
+    return this.login(identifier, password);
+  },
+
+  /** Logout from Supabase (if configured) and clear local session. */
+  async logoutAsync(): Promise<void> {
+    if (bridgeConfigured()) {
+      await bridgeLogout();
+    }
+    persist.remove(SESSION_KEY);
+    state = { user: null, ready: true };
+    emit();
+  },
+
   /** Update the signed-in user's profile (name/email). */
   updateProfile(patch: Partial<Pick<AuthUser, 'name' | 'email'>>) {
     if (!state.user) return;
@@ -210,6 +269,11 @@ export const authStore = {
    */
   async requestPasswordReset(email: string): Promise<{ resetUrl?: string }> {
     const trimmed = email.trim().toLowerCase();
+    // Cloud: ask Supabase to send the reset email; never reveal account existence.
+    if (bridgeConfigured()) {
+      const res = await bridgeRequestPasswordReset(trimmed);
+      if (res.configured) return {}; // Supabase delivers via email; no dev link
+    }
     const account = readAccounts().find((a) => a.email === trimmed);
     if (!account) return {}; // do not reveal account existence
 
@@ -274,6 +338,29 @@ export const authStore = {
 };
 
 boot();
+
+// When a backend is configured, reconcile the session with Supabase after the
+// synchronous local boot. If Supabase has a live session (e.g. after a page
+// refresh on the deployed site), adopt that user; if it doesn't but we showed a
+// stale local user, sign out. This is what keeps you logged in across reloads
+// and devices once cloud auth is active.
+if (bridgeConfigured()) {
+  void bridgeCurrentUser().then((res) => {
+    if (!res.configured) return;
+    if (res.ok) {
+      const cloudUser = res.value;
+      if (cloudUser) {
+        state = { user: cloudUser, ready: true };
+        emit();
+      } else if (state.user) {
+        // No cloud session — clear any local-only session to avoid a false login.
+        persist.remove(SESSION_KEY);
+        state = { user: null, ready: true };
+        emit();
+      }
+    }
+  });
+}
 
 export function useAuth(): AuthState {
   return useSyncExternalStore(authStore.subscribe, authStore.get, authStore.get);

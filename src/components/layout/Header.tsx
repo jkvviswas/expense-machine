@@ -194,7 +194,7 @@ export function Header() {
                     onClick={() => {
                       setMenuOpen(false);
                       balanceLockStore.lock();
-                      authStore.logout();
+                      void authStore.logoutAsync();
                       navigate('/login');
                     }}
                     className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-[0.84rem] text-soft transition-colors hover:bg-surface hover:text-loss"

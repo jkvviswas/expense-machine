@@ -33,26 +33,25 @@ export function AuthPage() {
   const submit = () => {
     setError(null);
     setBusy(true);
-    try {
-      if (mode === 'forgot') {
-        authStore.requestPasswordReset(email).then(({ resetUrl }) => {
+    (async () => {
+      try {
+        if (mode === 'forgot') {
+          const { resetUrl } = await authStore.requestPasswordReset(email);
           setForgotSent(true);
-          // No email infrastructure yet — surface the reset link directly so
-          // the flow can be exercised end-to-end. A real provider would
-          // deliver this via `emailService` instead (see src/lib/email.ts).
+          // Local/dev fallback surfaces the link directly; with a backend the
+          // reset is delivered by email and no link is returned.
           setDevResetLink(resetUrl ?? null);
-          setBusy(false);
-        });
-        return;
+          return;
+        }
+        if (mode === 'register') await authStore.registerAsync(name, email, password, username);
+        else await authStore.loginAsync(email, password);
+        navigate(from, { replace: true });
+      } catch (e) {
+        setError(e instanceof AuthError ? e.message : 'Something went wrong. Please try again.');
+      } finally {
+        setBusy(false);
       }
-      if (mode === 'register') authStore.register(name, email, password, username);
-      else authStore.login(email, password);
-      navigate(from, { replace: true });
-    } catch (e) {
-      setError(e instanceof AuthError ? e.message : 'Something went wrong. Please try again.');
-    } finally {
-      setBusy(false);
-    }
+    })();
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
