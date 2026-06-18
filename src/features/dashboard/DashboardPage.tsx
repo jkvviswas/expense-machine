@@ -24,6 +24,7 @@ import { BudgetHealth } from './components/BudgetHealth';
 import { Cashflow } from './components/Cashflow';
 import { DashboardSkeleton } from './components/DashboardSkeleton';
 import { DashboardEmpty } from './components/DashboardEmpty';
+import { ReviewSpotlight } from './components/ReviewSpotlight';
 import { BirthdayBanner } from './components/BirthdayBanner';
 
 export function DashboardPage() {
@@ -153,6 +154,11 @@ export function DashboardPage() {
       <StageItem className="grid gap-6 lg:grid-cols-2">
         <UpcomingCommitments obligations={obligations} total={obligationsTotal} />
         {hasBudgets && <BudgetHealth rows={budgets} />}
+      </StageItem>
+
+      {/* Community review spotlight (additive; renders only when reviews exist) */}
+      <StageItem className="mt-6">
+        <ReviewSpotlight />
       </StageItem>
 
       {/* quiet footer link */}
