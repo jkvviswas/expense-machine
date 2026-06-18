@@ -8,6 +8,7 @@ import {
   bridgeLogout,
   bridgeCurrentUser,
   bridgeRequestPasswordReset,
+  bridgeUpdateProfile,
 } from '../backend/authBridge';
 
 /**
@@ -107,6 +108,21 @@ function writeAccounts(list: StoredAccount[]) {
 }
 function toPublic(a: StoredAccount): AuthUser {
   return { id: a.id, name: a.name, username: a.username, email: a.email, createdAt: a.createdAt };
+}
+
+/** Apply a validated profile patch onto a user object (for optimistic UI). */
+function cleanPatch(
+  patch: Partial<Pick<AuthUser, 'name' | 'email' | 'username'>>,
+  current: AuthUser,
+): Partial<AuthUser> {
+  const out: Partial<AuthUser> = {};
+  if (patch.name !== undefined) out.name = patch.name.trim() || current.name;
+  if (patch.username !== undefined) out.username = patch.username.trim() || current.username;
+  if (patch.email !== undefined) {
+    const e = patch.email.trim().toLowerCase();
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) out.email = e;
+  }
+  return out;
 }
 
 export class AuthError extends Error {}
@@ -244,14 +260,28 @@ export const authStore = {
     emit();
   },
 
-  /** Update the signed-in user's profile (name/email). */
-  updateProfile(patch: Partial<Pick<AuthUser, 'name' | 'email'>>) {
+  /** Update the signed-in user's profile (name/email/username). */
+  updateProfile(patch: Partial<Pick<AuthUser, 'name' | 'email' | 'username'>>) {
     if (!state.user) return;
+    // Cloud: persist to Supabase metadata (fire-and-forget; local state updates
+    // immediately for a responsive UI).
+    if (bridgeConfigured()) {
+      state = { user: { ...state.user, ...cleanPatch(patch, state.user) }, ready: true };
+      emit();
+      void bridgeUpdateProfile(patch).then((res) => {
+        if (res.configured && res.ok) {
+          state = { user: res.value, ready: true };
+          emit();
+        }
+      });
+      return;
+    }
     const accounts = readAccounts();
     const idx = accounts.findIndex((a) => a.id === state.user!.id);
     if (idx < 0) return;
     const next = { ...accounts[idx] };
     if (patch.name !== undefined) next.name = patch.name.trim() || next.name;
+    if (patch.username !== undefined) next.username = patch.username.trim() || next.username;
     if (patch.email !== undefined) {
       const e = patch.email.trim().toLowerCase();
       if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) next.email = e;

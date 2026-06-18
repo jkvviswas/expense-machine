@@ -178,14 +178,14 @@ export function AuthPage() {
                 </motion.div>
               )}
             </AnimatePresence>
-            <Field icon={<Mail size={15} />} label={mode === 'login' ? 'Email or username' : 'Email'}>
+            <Field icon={<Mail size={15} />} label="Email">
               <input
-                type={mode === 'login' ? 'text' : 'email'}
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder={mode === 'login' ? 'you@example.in or username' : 'you@example.in'}
-                autoComplete={mode === 'login' ? 'username' : 'email'}
+                placeholder="you@example.in"
+                autoComplete="email"
                 className="h-11 w-full rounded-control border border-hairline bg-ground pl-10 pr-3 text-[0.9rem] text-bright placeholder:text-faint transition-colors duration-300 ease-lux focus:border-brass focus:outline-none"
               />
             </Field>

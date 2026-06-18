@@ -37,6 +37,8 @@ export function SettingsPage() {
     const emailEmpty = !s.email.trim() || LEGACY_DEMO.has(s.email.trim().toLowerCase());
     if (nameEmpty && user.name) settingsStore.set('name', user.name);
     if (emailEmpty && user.email) settingsStore.set('email', user.email);
+    // Keep the username field seeded from the signed-in account.
+    if (!s.username?.trim() && user.username) settingsStore.set('username', user.username);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -50,10 +52,10 @@ export function SettingsPage() {
 
   // Profile fields persist instantly; show a brief "Changes saved" confirmation
   // and keep the auth session display name/email in sync (Priority 5).
-  const setProfile = (key: 'name' | 'email' | 'dateOfBirth' | 'occupation' | 'city' | 'gender', value: string) => {
+  const setProfile = (key: 'name' | 'email' | 'username' | 'dateOfBirth' | 'occupation' | 'city' | 'gender', value: string) => {
     settingsStore.set(key, value);
-    if (key === 'name' || key === 'email') {
-      try { authStore.updateProfile({ [key]: value } as { name?: string; email?: string }); } catch { /* ignore invalid intermediate values */ }
+    if (key === 'name' || key === 'email' || key === 'username') {
+      try { authStore.updateProfile({ [key]: value } as { name?: string; email?: string; username?: string }); } catch { /* ignore invalid intermediate values */ }
     }
     flash('Changes saved');
   };
@@ -119,6 +121,9 @@ export function SettingsPage() {
             </div>
             <SettingRow label="Name">
               <TextField value={s.name} onChange={(v) => setProfile('name', v)} placeholder="Your name" />
+            </SettingRow>
+            <SettingRow label="Username" hint="Your display handle.">
+              <TextField value={s.username} onChange={(v) => setProfile('username', v)} placeholder="your_handle" />
             </SettingRow>
             <SettingRow label="Email">
               <TextField value={s.email} onChange={(v) => setProfile('email', v)} placeholder="you@example.in" type="email" />

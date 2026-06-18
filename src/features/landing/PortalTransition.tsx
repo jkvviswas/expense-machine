@@ -160,24 +160,24 @@ export function PortalTransition({
           />
 
 
-          {/* percentage + label — fade out as the portal expands.
+          {/* percentage + label — centered just below the core, fades on expand.
               Fixed light colors (the overlay is always dark, regardless of theme). */}
           <motion.div
-            className="absolute bottom-[16%] left-1/2 w-[min(440px,84vw)] -translate-x-1/2 text-center"
+            className="absolute left-1/2 top-1/2 w-[min(300px,76vw)] -translate-x-1/2 translate-y-[120px] text-center"
             animate={{ opacity: phase === 'expand' ? 0 : 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="mb-3 flex items-baseline justify-center gap-1.5">
+            <div className="mb-2.5 flex items-baseline justify-center gap-0.5">
               <span
-                className="font-num text-[2.8rem] font-medium tabular-nums"
-                style={{ color: '#F4ECDD', textShadow: '0 0 22px rgba(214,176,90,0.55)' }}
+                className="font-mono text-[1.4rem] font-medium tabular-nums tracking-tight"
+                style={{ color: '#F4ECDD' }}
               >
                 {pct}
               </span>
-              <span className="font-mono text-[1rem]" style={{ color: '#EAC870' }}>%</span>
+              <span className="font-mono text-[0.7rem]" style={{ color: '#EAC870' }}>%</span>
             </div>
             <div
-              className="h-[4px] w-full overflow-hidden rounded-full"
+              className="mx-auto h-[3px] w-full overflow-hidden rounded-full"
               style={{ background: 'rgba(244,236,221,0.14)' }}
             >
               <motion.div
@@ -185,13 +185,13 @@ export function PortalTransition({
                 style={{
                   width: `${pct}%`,
                   background: 'linear-gradient(90deg, #B38A3A, #EAC870)',
-                  boxShadow: '0 0 12px rgba(234,200,112,0.7)',
+                  boxShadow: '0 0 10px rgba(234,200,112,0.6)',
                 }}
               />
             </div>
             <p
-              className="mt-3.5 font-mono text-[0.66rem] uppercase tracking-[0.22em]"
-              style={{ color: 'rgba(244,236,221,0.66)' }}
+              className="mt-3 font-mono text-[0.6rem] uppercase tracking-[0.24em]"
+              style={{ color: 'rgba(244,236,221,0.6)' }}
             >
               {label}
             </p>

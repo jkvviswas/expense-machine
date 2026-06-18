@@ -70,13 +70,36 @@ export async function bridgeLogin(identifier: string, password: string): Promise
   if (!isBackendConfigured()) return { configured: false };
   const supabase = await getSupabase();
   if (!supabase) return { configured: false };
-  // Supabase signs in by email; if the identifier isn't an email we still try,
-  // and surface a friendly error if it fails.
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: identifier.trim().toLowerCase(),
-    password,
-  });
+  const id = identifier.trim().toLowerCase();
+  // Supabase authenticates by email. If the identifier isn't an email, guide
+  // the user to use their email rather than failing cryptically.
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)) {
+    return { configured: true, ok: false, message: 'Please sign in with your email address.' };
+  }
+  const { data, error } = await supabase.auth.signInWithPassword({ email: id, password });
   if (error) return { configured: true, ok: false, message: 'Those credentials are incorrect.' };
+  return { configured: true, ok: true, value: mapUser(data.user) };
+}
+
+/** Update the signed-in user's display name / username in Supabase metadata. */
+export async function bridgeUpdateProfile(
+  patch: { name?: string; username?: string; email?: string },
+): Promise<Result<BridgeUser>> {
+  if (!isBackendConfigured()) return { configured: false };
+  const supabase = await getSupabase();
+  if (!supabase) return { configured: false };
+  const attrs: { email?: string; data?: Record<string, unknown> } = {};
+  const meta: Record<string, unknown> = {};
+  if (patch.name !== undefined) meta.name = patch.name.trim();
+  if (patch.username !== undefined) meta.username = patch.username.trim();
+  if (Object.keys(meta).length) attrs.data = meta;
+  if (patch.email !== undefined) {
+    const e = patch.email.trim().toLowerCase();
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) attrs.email = e;
+  }
+  const { data, error } = await supabase.auth.updateUser(attrs);
+  if (error) return { configured: true, ok: false, message: error.message };
+  if (!data.user) return { configured: true, ok: false, message: 'Could not update profile.' };
   return { configured: true, ok: true, value: mapUser(data.user) };
 }
 

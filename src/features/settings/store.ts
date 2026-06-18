@@ -14,6 +14,7 @@ import { persist, STORAGE_KEYS } from '../../lib/persist';
 export interface Settings {
   // Profile
   name: string;
+  username: string;
   email: string;
   // Optional profile fields (all optional, never required)
   dateOfBirth: string; // ISO yyyy-mm-dd, '' when unset
@@ -44,6 +45,7 @@ export interface Settings {
 
 const DEFAULTS: Settings = {
   name: '',
+  username: '',
   email: '',
   dateOfBirth: '',
   occupation: '',
