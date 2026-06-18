@@ -27,7 +27,14 @@ export function getSupabase(): Promise<SupabaseClient | null> {
   clientPromise = import('@supabase/supabase-js')
     .then(({ createClient }) =>
       createClient(cfg.url, cfg.anonKey, {
-        auth: { persistSession: true, autoRefreshToken: true },
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          // Detect the recovery/confirmation token Supabase appends to the URL
+          // (e.g. on password-reset links) and establish the session from it.
+          detectSessionInUrl: true,
+          flowType: 'implicit',
+        },
       }),
     )
     .catch(() => null);

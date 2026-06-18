@@ -7,6 +7,7 @@ import {
   type Variants,
 } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   FileText,
@@ -108,6 +109,7 @@ export function LandingPage() {
   // Portal transition state: when set, the cinematic overlay plays then navigates.
   const [portalTo, setPortalTo] = useState<string | null>(null);
   const launch = (to: string) => setPortalTo(to);
+  const nav = useNavigate();
 
   return (
     <div className="em-grain em-theme-tween relative min-h-screen bg-ground text-bright" style={{ overflowX: 'clip' }}>
@@ -459,12 +461,23 @@ export function LandingPage() {
 
       {/* ---------------- FOOTER ---------------- */}
       <footer className="border-t border-hairline py-12">
-        <Reveal className="mx-auto flex max-w-content flex-col items-center justify-between gap-6 px-6 sm:flex-row">
-          <BrandMark size={26} />
-          <div className="flex items-center gap-6">
-            <button type="button" onClick={() => scrollToId('reviews')} className="text-[0.78rem] text-muted transition-colors hover:text-bright">Reviews</button>
-            <button type="button" onClick={() => scrollToId('terms')} className="text-[0.78rem] text-muted transition-colors hover:text-bright">Terms</button>
-            <button type="button" onClick={() => launch('/login')} className="text-[0.82rem] text-brass transition-colors hover:text-brass-bright">Sign in →</button>
+        <Reveal className="mx-auto flex max-w-content flex-col gap-8 px-6">
+          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+            <div className="flex items-center gap-1.5">
+              <BrandMark size={26} />
+              <span className="font-mono text-[0.6rem] text-faint">™</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              <button type="button" onClick={() => scrollToId('reviews')} className="text-[0.78rem] text-muted transition-colors hover:text-bright">Reviews</button>
+              <button type="button" onClick={() => nav('/privacy')} className="text-[0.78rem] text-muted transition-colors hover:text-bright">Privacy</button>
+              <button type="button" onClick={() => nav('/terms')} className="text-[0.78rem] text-muted transition-colors hover:text-bright">Terms</button>
+              <button type="button" onClick={() => launch('/login')} className="text-[0.82rem] text-brass transition-colors hover:text-brass-bright">Sign in →</button>
+            </div>
+          </div>
+          <div className="border-t border-hairline pt-6 text-center">
+            <p className="font-mono text-[0.66rem] tracking-[0.06em] text-faint">
+              © {new Date().getFullYear()} Expense Machine™. All rights reserved.
+            </p>
           </div>
         </Reveal>
       </footer>

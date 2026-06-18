@@ -21,6 +21,12 @@ const AuthPage = lazy(() =>
 const ResetPasswordPage = lazy(() =>
   import('../features/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })),
 );
+const PrivacyPage = lazy(() =>
+  import('../features/legal/LegalPages').then((m) => ({ default: m.PrivacyPage })),
+);
+const TermsPage = lazy(() =>
+  import('../features/legal/LegalPages').then((m) => ({ default: m.TermsPage })),
+);
 const TransactionsPage = lazy(() =>
   import('../features/transactions/TransactionsPage').then((m) => ({ default: m.TransactionsPage })),
 );
@@ -79,6 +85,14 @@ export const router = createBrowserRouter([
   {
     path: '/reset-password',
     element: <ResetPasswordPage />,
+  },
+  {
+    path: '/privacy',
+    element: <PrivacyPage />,
+  },
+  {
+    path: '/terms',
+    element: <TermsPage />,
   },
   {
     // Auth-gated but NOT onboarding-gated: this is where new users land.

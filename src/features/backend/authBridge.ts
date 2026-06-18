@@ -131,15 +131,38 @@ export async function bridgeRequestPasswordReset(email: string): Promise<Result<
 
 /**
  * After a user clicks the reset link in their email, Supabase establishes a
- * temporary "recovery" session. Returns true if such a session exists — i.e.
- * the user arrived from a valid, unexpired reset link and may set a new password.
+ * temporary "recovery" session by parsing the token in the URL. This can land a
+ * moment after page load, so we listen briefly for the auth event before giving
+ * up — avoiding a race where the page reads the session too early and wrongly
+ * shows "invalid link". Resolves true once a session exists.
  */
-export async function bridgeHasRecoverySession(): Promise<Result<boolean>> {
+export async function bridgeHasRecoverySession(timeoutMs = 4000): Promise<Result<boolean>> {
   if (!isBackendConfigured()) return { configured: false };
   const supabase = await getSupabase();
   if (!supabase) return { configured: false };
-  const { data } = await supabase.auth.getSession();
-  return { configured: true, ok: true, value: !!data.session };
+
+  const existing = await supabase.auth.getSession();
+  if (existing.data.session) return { configured: true, ok: true, value: true };
+
+  return new Promise<Result<boolean>>((resolve) => {
+    let settled = false;
+    const finish = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      try { sub.data.subscription.unsubscribe(); } catch { /* noop */ }
+      clearTimeout(timer);
+      resolve({ configured: true, ok: true, value });
+    };
+    const sub = supabase.auth.onAuthStateChange((event, session) => {
+      if (session || event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        finish(!!session || event === 'PASSWORD_RECOVERY');
+      }
+    });
+    const timer = setTimeout(async () => {
+      const again = await supabase.auth.getSession();
+      finish(!!again.data.session);
+    }, timeoutMs);
+  });
 }
 
 /** Set a new password for the user in the current (recovery) session. */
