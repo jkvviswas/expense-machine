@@ -84,7 +84,8 @@ function BulkCategory({ onPick }: { onPick: (c: Category) => void }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-full left-0 z-50 mb-2 w-44 overflow-hidden rounded-control border border-hairline bg-elevated shadow-elevated"
+            className="absolute bottom-full left-0 z-50 mb-2 w-44 overflow-y-auto overflow-x-hidden rounded-control border border-hairline bg-elevated shadow-elevated"
+            style={{ maxHeight: 'min(60vh, 340px)' }}
           >
             {categories.map((c) => (
               <button

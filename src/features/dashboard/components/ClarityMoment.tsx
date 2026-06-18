@@ -68,10 +68,10 @@ export function ClarityMoment({ safe, remaining }: ClarityMomentProps) {
         <div style={{ width: '100%', height: '100%', borderRadius: '50%', animation: 'em-ring-counter 22s linear infinite', background: 'rgba(255,253,248,0.97)', padding: '13px', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div ref={innerRef} style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'radial-gradient(ellipse at 38% 32%, rgba(255,253,248,1) 0%, rgba(247,242,233,0.97) 55%, rgba(237,231,219,0.94) 100%)', border: '1px solid rgba(210,201,182,0.5)', boxShadow: 'inset 0 2px 14px rgba(156,122,60,0.07), inset 0 -2px 8px rgba(100,80,40,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxSizing: 'border-box' }}>
             <div className="relative flex flex-col items-center" style={{ padding: '0 8%', width: '100%', textAlign: 'center' }}>
-              <span className="font-num whitespace-nowrap leading-none" style={{ fontSize: `${fontSize}px`, color: overspent ? 'var(--em-loss)' : 'var(--em-gain)', display: 'block' }}>
+              <span className="font-num whitespace-nowrap leading-none [&_*]:!text-inherit" style={{ fontSize: `${fontSize}px`, color: overspent ? '#B0432F' : '#3F7A52', display: 'block' }}>
                 <CountUpMoney amount={display} colorize={false} decimalStyle="inline" />
               </span>
-              <span className="leading-snug" style={{ display: 'block', marginTop: '0.55rem', fontSize: `${Math.max(10, fontSize * 0.38)}px`, color: 'var(--em-muted)', maxWidth: '72%' }}>
+              <span className="leading-snug" style={{ display: 'block', marginTop: '0.55rem', fontSize: `${Math.max(10, fontSize * 0.38)}px`, color: '#6B6356', maxWidth: '72%' }}>
                 {caption}
               </span>
             </div>
