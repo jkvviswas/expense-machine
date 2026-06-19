@@ -10,6 +10,8 @@ import { behaviourMetrics } from './behaviour';
 import { budgetStore } from '../budgets/store';
 import { categoryBudgets } from '../budgets/derive';
 import { buildHistory } from './history';
+import { monthKeyOf } from '../../lib/date';
+import { formatIndianNumber } from '../../lib/money';
 
 /**
  * ANALYTICS INTELLIGENCE (presentation-only, additive).
@@ -18,7 +20,6 @@ import { buildHistory } from './history';
  */
 
 const REF = new Date();
-const monthKeyOf = (iso: string) => iso.slice(0, 7);
 
 function currentMonthKey(txns: Transaction[]): string {
   const m = monthsInLedger(txns);
@@ -156,7 +157,7 @@ export function behaviourSignals(txns: Transaction[]): BehaviourSignal[] {
 
   // recurring load
   if (b.largestRecurring)
-    out.push({ title: 'Recurring commitment', observation: `${b.largestRecurring.merchant} is your largest recurring outflow at \u20B9${b.largestRecurring.amount.toLocaleString('en-IN')}.`, impact: 'medium', tone: 'neutral' });
+    out.push({ title: 'Recurring commitment', observation: `${b.largestRecurring.merchant} is your largest recurring outflow at \u20B9${formatIndianNumber(b.largestRecurring.amount)}.`, impact: 'medium', tone: 'neutral' });
 
   return out.slice(0, 6);
 }
@@ -268,8 +269,8 @@ export function lookingAhead(txns: Transaction[]): Prediction[] {
   const projSpend = Math.round(cf.outflow / fraction);
   const projNet = Math.round((cf.inflow - projSpend));
 
-  out.push({ text: `If spending continues at the current pace, the month may close near \u20B9${projSpend.toLocaleString('en-IN')} in outflow.`, tone: 'neutral' });
-  out.push({ text: projNet >= 0 ? `Projected savings this month: about \u20B9${projNet.toLocaleString('en-IN')}.` : `At this pace, spending could exceed income by about \u20B9${Math.abs(projNet).toLocaleString('en-IN')}.`, tone: projNet >= 0 ? 'gain' : 'loss' });
+  out.push({ text: `If spending continues at the current pace, the month may close near \u20B9${formatIndianNumber(projSpend)} in outflow.`, tone: 'neutral' });
+  out.push({ text: projNet >= 0 ? `Projected savings this month: about \u20B9${formatIndianNumber(projNet)}.` : `At this pace, spending could exceed income by about \u20B9${formatIndianNumber(Math.abs(projNet))}.`, tone: projNet >= 0 ? 'gain' : 'loss' });
 
   const budgets = categoryBudgets(txns, budgetStore.getCaps());
   const projectedOver = budgets.filter((b) => (b.spent / fraction) > b.cap && b.cap > 0);
@@ -296,7 +297,7 @@ export function financialStory(txns: Transaction[]): string {
   const over = budgets.filter((b) => b.status === 'over').length;
 
   const savingsClause = rate >= 40 ? `${monthLabel} was a strong savings month` : rate >= 0 ? `${monthLabel} was a balanced month` : `${monthLabel} saw spending outpace income`;
-  const spendClause = cf.outflow > 0 ? ` Spending remained ${rate >= 40 ? 'exceptionally controlled' : 'within normal range'}, totalling \u20B9${cf.outflow.toLocaleString('en-IN')}.` : '';
+  const spendClause = cf.outflow > 0 ? ` Spending remained ${rate >= 40 ? 'exceptionally controlled' : 'within normal range'}, totalling \u20B9${formatIndianNumber(cf.outflow)}.` : '';
   const topClause = top ? ` ${top.category} represented the majority of activity at ${Math.round(top.share * 100)}% of spend.` : '';
   const budgetClause = over === 0 ? ' All budget categories stayed comfortably within their limits.' : ` ${over} budget ${over === 1 ? 'category' : 'categories'} ran over limit and deserve attention.`;
 

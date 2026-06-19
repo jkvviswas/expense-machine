@@ -11,6 +11,7 @@ import {
   monthMeta,
   type Insight,
 } from '../analytics/derive';
+import { monthKeyOf } from '../../lib/date';
 
 /**
  * ============================================================================
@@ -41,10 +42,6 @@ export interface MonthlyReport {
   topCategories: CategoryLine[];
   largestExpenses: Transaction[];
   insights: Insight[];
-}
-
-function monthKeyOf(iso: string): string {
-  return iso.slice(0, 7);
 }
 
 /** Build the full monthly report for the most recent (or given) month. */

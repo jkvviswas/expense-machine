@@ -4,6 +4,7 @@ import type { ParsedTransaction } from '../import/types';
 import { fetchTransactions } from './data';
 import { persist, STORAGE_KEYS } from '../../lib/persist';
 import { merchantRules, normMerchant } from './merchantRules';
+import { generateId } from '../../lib/id';
 
 /**
  * ============================================================================
@@ -155,7 +156,7 @@ export const transactionsStore = {
     const created: Transaction = {
       ...txn,
       category: txn.category ?? learned ?? 'Uncategorized',
-      id: `man-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      id: generateId('man'),
     };
     ledger = [created, ...ledger];
     save();
@@ -250,7 +251,7 @@ export const transactionsStore = {
     );
     if (exists) return false;
     const entry: Transaction = {
-      id: `open-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      id: generateId('open'),
       date,
       merchant: 'Opening Balance',
       description: 'Statement opening balance',

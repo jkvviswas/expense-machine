@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { RecentImport } from '../types';
 import { persist, STORAGE_KEYS } from '../../../lib/persist';
+import { generateId } from '../../../lib/id';
 
 /**
  * ============================================================================
@@ -40,7 +41,7 @@ export const importHistoryStore = {
     const list = load();
     const now = new Date();
     const item: RecentImport = {
-      id: `imp-${Date.now().toString(36)}`,
+      id: generateId('imp'),
       importedOn: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
         + ' \u2022 '
         + now.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }),

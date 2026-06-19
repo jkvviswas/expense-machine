@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus, Trash2 } from 'lucide-react';
+import { generateId } from '../../lib/id';
+import { todayIso } from '../../lib/date';
 import {
   clientsStore,
   invoiceSubtotal,
@@ -23,11 +25,7 @@ import { formatMoneyFull } from '../import/format';
 const STATUSES: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue'];
 
 function blankLine(): InvoiceLine {
-  return { id: `l-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`, description: '', quantity: 1, unitAmount: 0 };
-}
-
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  return { id: generateId('l'), description: '', quantity: 1, unitAmount: 0 };
 }
 function plusDaysIso(days: number): string {
   return new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);

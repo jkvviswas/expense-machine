@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { interRegular, interSemiBold, frauncesRegular, frauncesMedium } from '../reports/fonts';
+import { formatIndianNumber } from '../../lib/money';
 import {
   type Invoice,
   type Client,
@@ -44,8 +45,7 @@ const CONTENT_W = PAGE_W - MARGIN * 2;
 
 function money(n: number): string {
   const neg = n < 0;
-  const s = Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return `${neg ? '-' : ''}\u20B9${s}`;
+  return `${neg ? '-' : ''}\u20B9${formatIndianNumber(Math.abs(n), 2)}`;
 }
 
 function text(d: jsPDF, c: RGB) { d.setTextColor(c[0], c[1], c[2]); }

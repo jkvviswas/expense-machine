@@ -3,11 +3,7 @@ import type { Category } from '../import/types';
 import { monthlyFlows } from './derive';
 import { categoryBudgets } from '../budgets/derive';
 import { budgetStore } from '../budgets/store';
-
-/** Local month-key helper (yyyy-mm) so this module is self-contained. */
-function monthKeyOf(iso: string): string {
-  return iso.slice(0, 7);
-}
+import { monthKeyOf } from '../../lib/date';
 
 /**
  * ============================================================================

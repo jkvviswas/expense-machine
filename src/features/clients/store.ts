@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { persist } from '../../lib/persist';
+import { generateId } from '../../lib/id';
 
 /**
  * ============================================================================
@@ -92,7 +93,7 @@ export const clientsStore = {
   addClient(input: Omit<Client, 'id' | 'createdAt'>): Client {
     const client: Client = {
       ...input,
-      id: `c-${Date.now().toString(36)}`,
+      id: generateId('c'),
       createdAt: new Date().toISOString(),
     };
     state = { ...state, clients: [client, ...state.clients] };
@@ -166,7 +167,7 @@ export const clientsStore = {
   },
 
   addInvoice(input: Omit<Invoice, 'id'>): Invoice {
-    const invoice: Invoice = { ...input, id: `inv-${Date.now().toString(36)}` };
+    const invoice: Invoice = { ...input, id: generateId('inv') };
     state = { ...state, invoices: [invoice, ...state.invoices] };
     save();
     emit();

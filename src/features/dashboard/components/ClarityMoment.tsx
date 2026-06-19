@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CountUpMoney } from './CountUpMoney';
+import { formatMoneyCompact } from '../../../lib/money';
 
 interface ClarityMomentProps {
   safe: number;
@@ -27,11 +28,7 @@ export function ClarityMoment({ safe, remaining }: ClarityMomentProps) {
     return () => ro.disconnect();
   }, []);
 
-  const formatStr = (n: number) => {
-    const s = Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return n < 0 ? `−₹${s}` : `₹${s}`;
-  };
-  const amtStr = formatStr(display);
+  const amtStr = formatMoneyCompact(display);
   const charCount = amtStr.length;
   const computed = (innerW * 0.78) / (charCount * 0.62);
   const fontSize = Math.min(Math.max(computed, 14), 38);

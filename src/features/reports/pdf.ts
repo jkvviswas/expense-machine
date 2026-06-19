@@ -6,6 +6,7 @@ import { budgetStore } from '../budgets/store';
 import { naturalInsights } from '../analytics/behaviour';
 import { merchantInsights } from '../analytics/derive';
 import { interRegular, interSemiBold, frauncesRegular, frauncesMedium } from './fonts';
+import { formatMoneyCompact } from '../../lib/money';
 
 /**
  * REAL PDF GENERATION (presentation only — no report math).
@@ -28,7 +29,7 @@ const CAT_TONES: RGB[] = [
 ];
 
 const PAGE_W = 210, PAGE_H = 297, MARGIN = 18, CONTENT_W = PAGE_W - MARGIN * 2;
-const money = (n: number) => `${n < 0 ? '-' : ''}\u20B9${Math.abs(n).toLocaleString('en-IN')}`;
+const money = formatMoneyCompact;
 function fill(d: jsPDF, c: RGB) { d.setFillColor(c[0], c[1], c[2]); }
 function stroke(d: jsPDF, c: RGB) { d.setDrawColor(c[0], c[1], c[2]); }
 function text(d: jsPDF, c: RGB) { d.setTextColor(c[0], c[1], c[2]); }

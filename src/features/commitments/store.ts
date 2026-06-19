@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { persist, STORAGE_KEYS } from '../../lib/persist';
 import { loansStore } from '../loans/store';
 import type { Category } from '../transactions/types';
+import { generateId } from '../../lib/id';
 
 export type CommitmentKind = 'Rent' | 'EMI' | 'Insurance' | 'Credit Card' | 'Subscription' | 'SIP' | 'Tuition' | 'Other';
 
@@ -59,7 +60,7 @@ export const commitmentsStore = {
     return user;
   },
   add(c: Omit<Commitment, 'id'>): Commitment {
-    const created: Commitment = { ...c, id: `cmt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}` };
+    const created: Commitment = { ...c, id: generateId('cmt') };
     user = [created, ...user];
     save();
     emit();

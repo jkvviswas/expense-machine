@@ -7,16 +7,14 @@ import {
   cashflowSummary,
   type Insight,
 } from './derive';
+import { monthKeyOf } from '../../lib/date';
+import { formatIndianNumber } from '../../lib/money';
 
 /**
  * BEHAVIOUR LAYER (additive, presentation-only).
  * Computes "financial intelligence" metrics from the ledger. These are new,
  * standalone helpers — they do NOT modify any locked derivation function.
  */
-
-function monthKeyOf(iso: string): string {
-  return iso.slice(0, 7);
-}
 
 export interface BehaviourMetrics {
   avgTransactionSize: number;
@@ -142,7 +140,7 @@ export function naturalInsights(txns: Transaction[]): Insight[] {
     out.push({
       id: 'habit',
       tone: 'neutral',
-      text: `${m.merchant} is where the most flows out — ₹${m.total.toLocaleString('en-IN')} across ${m.count} ${m.count === 1 ? 'payment' : 'payments'}.`,
+      text: `${m.merchant} is where the most flows out — ₹${formatIndianNumber(m.total)} across ${m.count} ${m.count === 1 ? 'payment' : 'payments'}.`,
     });
   }
 
@@ -152,7 +150,7 @@ export function naturalInsights(txns: Transaction[]): Insight[] {
     out.push({
       id: 'avg',
       tone: 'neutral',
-      text: `Your typical transaction is about ₹${Math.round(b.avgTransactionSize).toLocaleString('en-IN')}.`,
+      text: `Your typical transaction is about ₹${formatIndianNumber(Math.round(b.avgTransactionSize))}.`,
     });
   }
 

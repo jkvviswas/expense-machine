@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Trash2, CalendarClock, Check } from 'lucide-react';
 import { PageStage, StageItem } from '../../components/layout/PageStage';
 import { formatMoneyFull, formatDate } from '../import/format';
+import { todayIso } from '../../lib/date';
 import { CategorySelect } from '../import/components/CategorySelect';
 import { useCommitments, commitmentsStore, COMMITMENT_KINDS, type Commitment, type CommitmentKind } from './store';
 import { markCommitmentPaid } from './actions';
@@ -11,7 +12,7 @@ import type { Category } from '../transactions/types';
 
 function daysUntil(iso: string): number {
   const d = new Date(iso + 'T00:00:00').getTime();
-  const now = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00').getTime();
+  const now = new Date(todayIso() + 'T00:00:00').getTime();
   return Math.round((d - now) / 86_400_000);
 }
 
@@ -105,7 +106,7 @@ function CommitmentEditor({ open, commitment, onClose }: { open: boolean; commit
   const [name, setName] = useState('');
   const [kind, setKind] = useState<CommitmentKind>('Rent');
   const [amount, setAmount] = useState('');
-  const [dueDate, setDueDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState(todayIso);
   const [category, setCategory] = useState<Category>('Uncategorized');
 
   const seeded = useState({ id: '' })[0];
@@ -114,7 +115,7 @@ function CommitmentEditor({ open, commitment, onClose }: { open: boolean; commit
     setName(commitment?.name ?? '');
     setKind(commitment?.kind ?? 'Rent');
     setAmount(commitment ? String(commitment.amount) : '');
-    setDueDate(commitment?.dueDate ?? new Date().toISOString().slice(0, 10));
+    setDueDate(commitment?.dueDate ?? todayIso());
     setCategory(commitment?.category ?? 'Uncategorized');
   }
 

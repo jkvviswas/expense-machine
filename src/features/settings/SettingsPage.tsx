@@ -3,6 +3,7 @@ import { CategoriesSection } from './components/CategoriesSection';
 import { BalancePrivacySection } from './components/BalancePrivacySection';
 import { Check, RotateCcw, Download, Upload, Trash2 } from 'lucide-react';
 import { PageStage, StageItem } from '../../components/layout/PageStage';
+import { todayIso } from '../../lib/date';
 import { useSettings, settingsStore } from './store';
 import { budgetStore } from '../budgets/store';
 import { transactionsStore } from '../transactions/store';
@@ -67,7 +68,7 @@ export function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `expense-machine-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `expense-machine-backup-${todayIso()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     flash('Backup downloaded.');

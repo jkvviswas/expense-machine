@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { persist, STORAGE_KEYS } from '../../lib/persist';
 import { transactionsStore } from '../transactions/store';
+import { generateId } from '../../lib/id';
 
 export type AccountType = 'Savings' | 'Salary' | 'Current' | 'Credit Card' | 'Joint' | 'Wallet' | 'Other';
 
@@ -35,7 +36,7 @@ export const accountsStore = {
     return accounts.find((a) => a.id === id);
   },
   add(acc: Omit<UserAccount, 'id'>): UserAccount {
-    const created: UserAccount = { ...acc, id: `acct-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}` };
+    const created: UserAccount = { ...acc, id: generateId('acct') };
     accounts = [created, ...accounts];
     save();
     emit();

@@ -1,6 +1,7 @@
 import { transactionsStore } from '../transactions/store';
 import { clientsStore, invoiceTotal, type Invoice, type Client } from './store';
 import type { Transaction } from '../transactions/types';
+import { todayIso } from '../../lib/date';
 
 /**
  * ============================================================================
@@ -35,7 +36,7 @@ export function payInvoice(invoice: Invoice, amount?: number) {
 
   // 1) Ledger income (single source of truth for all revenue surfaces).
   transactionsStore.add({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayIso(),
     merchant: label,
     description: `Invoice ${invoice.number} payment`,
     amount: Math.abs(pay),
