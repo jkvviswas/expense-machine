@@ -79,8 +79,8 @@ export function timezoneAbbrev(date: Date, timezone?: string): string {
     }).formatToParts(date);
     const v = parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
     if (v && /^[A-Z]{2,5}$/.test(v) && !/^GMT/.test(v) && !/^UTC[+-]/.test(v)) return v;
-  } catch {
-    /* fall through */
+  } catch (err: unknown) {
+    console.warn('[Localization] Timezone abbreviation lookup failed:', err);
   }
   // Live GMT offset fallback.
   if (!timezone) return '';
@@ -97,7 +97,8 @@ export function timezoneAbbrev(date: Date, timezone?: string): string {
     const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
     const offsetMin = Math.round((asUTC - date.getTime()) / 60000);
     return gmtOffsetLabel(offsetMin);
-  } catch {
+  } catch (err: unknown) {
+    console.warn('[Localization] GMT offset computation failed:', err);
     return '';
   }
 }

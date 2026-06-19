@@ -40,7 +40,11 @@ export async function fetchApprovedReviews(limit = 12): Promise<PublicReview[]> 
     .eq('approved', true)
     .order('created_at', { ascending: false })
     .limit(limit);
-  if (error || !data) return [];
+  if (error) {
+    console.warn('[Reviews] Failed to fetch approved reviews:', error.message);
+    return [];
+  }
+  if (!data) return [];
   return data.map((r) => ({
     id: r.id as string,
     name: (r.name as string) ?? 'Anonymous',

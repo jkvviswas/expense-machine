@@ -43,7 +43,8 @@ export const persist = {
       const raw = window.localStorage.getItem(fullKey(key));
       if (raw === null) return fallback;
       return JSON.parse(raw) as T;
-    } catch {
+    } catch (err: unknown) {
+      console.warn('[Persist] Failed to read key', key, '— returning fallback:', err);
       return fallback;
     }
   },
@@ -52,8 +53,8 @@ export const persist = {
     if (!ENABLED) return;
     try {
       window.localStorage.setItem(fullKey(key), JSON.stringify(value));
-    } catch {
-      // quota / serialization failure → silently skip; in-memory still works.
+    } catch (err: unknown) {
+      console.warn('[Persist] Failed to write key', key, ':', err);
     }
   },
 

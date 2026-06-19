@@ -54,15 +54,17 @@ export async function pushAll(): Promise<SyncStatus> {
     for (const { domain, table, column } of BLOB_DOMAINS) {
       const value = persist.read(STORAGE_KEYS[domain], null);
       if (value == null) continue;
-      await c.supabase.from(table).upsert({ user_id: c.userId, [column]: value });
-      pushed++;
+      const { error } = await c.supabase.from(table).upsert({ user_id: c.userId, [column]: value });
+      if (error) console.warn(`[Sync] Push failed for ${domain}:`, error.message);
+      else pushed++;
     }
     // list domains (transactions). Rows carry their own id; chunk to stay small.
     const txns = persist.read<Record<string, unknown>[]>(STORAGE_KEYS.transactions, []);
     if (txns.length) {
       const rows = txns.map((t) => ({ ...t, user_id: c.userId }));
-      await c.supabase.from('transactions').upsert(rows);
-      pushed += rows.length;
+      const { error: txnErr } = await c.supabase.from('transactions').upsert(rows);
+      if (txnErr) console.warn('[Sync] Push failed for transactions:', txnErr.message);
+      else pushed += rows.length;
     }
     return { ok: true, pushed };
   } catch (e) {
@@ -77,14 +79,16 @@ export async function pullAll(): Promise<SyncStatus> {
   try {
     let pulled = 0;
     for (const { domain, table, column } of BLOB_DOMAINS) {
-      const { data } = await c.supabase.from(table).select(column).eq('user_id', c.userId).maybeSingle();
+      const { data, error } = await c.supabase.from(table).select(column).eq('user_id', c.userId).maybeSingle();
+      if (error) { console.warn(`[Sync] Pull failed for ${domain}:`, error.message); continue; }
       const value = data ? (data as unknown as Record<string, unknown>)[column] : null;
       if (value != null) {
         persist.write(STORAGE_KEYS[domain], value);
         pulled++;
       }
     }
-    const { data: txns } = await c.supabase.from('transactions').select('*').eq('user_id', c.userId);
+    const { data: txns, error: txnErr } = await c.supabase.from('transactions').select('*').eq('user_id', c.userId);
+    if (txnErr) console.warn('[Sync] Pull failed for transactions:', txnErr.message);
     if (txns && txns.length) {
       persist.write(STORAGE_KEYS.transactions, txns);
       pulled += txns.length;

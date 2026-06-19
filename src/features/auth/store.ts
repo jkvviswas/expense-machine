@@ -253,7 +253,11 @@ export const authStore = {
   /** Logout from Supabase (if configured) and clear local session. */
   async logoutAsync(): Promise<void> {
     if (bridgeConfigured()) {
-      await bridgeLogout();
+      try {
+        await bridgeLogout();
+      } catch (err: unknown) {
+        console.warn('[Auth] Remote sign-out failed (local session cleared anyway):', err);
+      }
     }
     persist.remove(SESSION_KEY);
     state = { user: null, ready: true };
@@ -268,12 +272,18 @@ export const authStore = {
     if (bridgeConfigured()) {
       state = { user: { ...state.user, ...cleanPatch(patch, state.user) }, ready: true };
       emit();
-      void bridgeUpdateProfile(patch).then((res) => {
-        if (res.configured && res.ok) {
-          state = { user: res.value, ready: true };
-          emit();
-        }
-      });
+      void bridgeUpdateProfile(patch)
+        .then((res) => {
+          if (res.configured && res.ok) {
+            state = { user: res.value, ready: true };
+            emit();
+          } else if (res.configured && !res.ok) {
+            console.warn('[Auth] Remote profile update failed:', res.message);
+          }
+        })
+        .catch((err: unknown) => {
+          console.warn('[Auth] Remote profile update error:', err);
+        });
       return;
     }
     const accounts = readAccounts();
@@ -375,21 +385,26 @@ boot();
 // stale local user, sign out. This is what keeps you logged in across reloads
 // and devices once cloud auth is active.
 if (bridgeConfigured()) {
-  void bridgeCurrentUser().then((res) => {
-    if (!res.configured) return;
-    if (res.ok) {
-      const cloudUser = res.value;
-      if (cloudUser) {
-        state = { user: cloudUser, ready: true };
-        emit();
-      } else if (state.user) {
-        // No cloud session — clear any local-only session to avoid a false login.
-        persist.remove(SESSION_KEY);
-        state = { user: null, ready: true };
-        emit();
+  void bridgeCurrentUser()
+    .then((res) => {
+      if (!res.configured) return;
+      if (res.ok) {
+        const cloudUser = res.value;
+        if (cloudUser) {
+          state = { user: cloudUser, ready: true };
+          emit();
+        } else if (state.user) {
+          persist.remove(SESSION_KEY);
+          state = { user: null, ready: true };
+          emit();
+        }
+      } else {
+        console.warn('[Auth] Cloud session restore failed:', res.message);
       }
-    }
-  });
+    })
+    .catch((err: unknown) => {
+      console.warn('[Auth] Cloud session restore error:', err);
+    });
 }
 
 export function useAuth(): AuthState {

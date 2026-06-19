@@ -374,7 +374,9 @@ export function useLedger(): Transaction[] | null {
     () => null,
   );
   if (!hydrated && !hydrating) {
-    void ensureHydrated();
+    void ensureHydrated().catch((err: unknown) => {
+      console.error('[Ledger] Hydration failed:', err);
+    });
   }
   return snapshot;
 }

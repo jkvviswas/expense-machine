@@ -55,7 +55,7 @@ export function SettingsPage() {
   const setProfile = (key: 'name' | 'email' | 'username' | 'dateOfBirth' | 'occupation' | 'city' | 'gender', value: string) => {
     settingsStore.set(key, value);
     if (key === 'name' || key === 'email' || key === 'username') {
-      try { authStore.updateProfile({ [key]: value } as { name?: string; email?: string; username?: string }); } catch { /* ignore invalid intermediate values */ }
+      try { authStore.updateProfile({ [key]: value } as { name?: string; email?: string; username?: string }); } catch (err: unknown) { console.warn('[Settings] Profile sync skipped:', err); }
     }
     flash('Changes saved');
   };
