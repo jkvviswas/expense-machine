@@ -171,34 +171,20 @@ export const localProvider: AskProvider = {
   },
 };
 
-// --- remote (Claude/OpenAI) seam — inert without a configured key -----------
-function remoteKey(): string | undefined {
-  // Vite exposes import.meta.env at build time; absent → undefined.
-  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env ?? {};
-  return env.VITE_ANTHROPIC_API_KEY || env.VITE_OPENAI_API_KEY;
-}
-
+// --- remote (Claude/OpenAI) seam — DISABLED for security ---------------------
+// Browser-exposed API keys (VITE_* vars are inlined into the JS bundle) are a
+// credential leak. This provider is intentionally disabled: even if a key is
+// present in the env, it MUST NOT be sent from the client. A backend proxy is
+// required for real LLM integration.
 export const remoteProvider: AskProvider = {
   id: 'remote',
-  label: 'Claude / OpenAI (not configured)',
-  isAvailable: () => !!remoteKey(),
+  label: 'Claude / OpenAI (requires backend proxy)',
+  isAvailable: () => false,
   async ask(question, txns) {
-    // Honest seam: we do NOT pretend to call an LLM. A browser-exposed key is
-    // insecure; a real integration must proxy through a backend. Until that
-    // exists, fall back to the local engine and label the source truthfully.
-    if (!remoteKey()) {
-      const local = answerLocally(question, txns);
-      return {
-        ...local,
-        text: `${local.text}\n\n(LLM provider not configured — answered with built-in analysis. Add a backend proxy + API key to enable Claude/OpenAI.)`,
-      };
-    }
-    // Even with a key present, the secure call belongs server-side; we are
-    // explicit rather than fabricating a response.
     const local = answerLocally(question, txns);
     return {
       ...local,
-      text: `${local.text}\n\n(A provider key is present, but live LLM calls require a backend proxy that isn't wired up in this build. Showing built-in analysis.)`,
+      text: `${local.text}\n\n(LLM provider disabled — browser-exposed API keys are insecure. Configure a backend proxy to enable Claude/OpenAI.)`,
     };
   },
 };

@@ -68,7 +68,7 @@ export function ResetPasswordPage() {
             setError('Something went wrong. Please try again.');
           }
         } else {
-          authStore.resetPassword(token, password);
+          await authStore.resetPassword(token, password);
           setDone(true);
         }
       } catch (e) {

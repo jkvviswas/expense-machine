@@ -34,7 +34,9 @@ function hash(input: string): string {
   return (h >>> 0).toString(16);
 }
 function randomSalt(): string {
-  return Math.random().toString(36).slice(2, 10);
+  const buf = new Uint8Array(8);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 function hashPin(pin: string, salt: string): string {
   return hash(`${salt}::${pin}::balance`);
