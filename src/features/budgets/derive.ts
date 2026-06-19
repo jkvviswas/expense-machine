@@ -1,17 +1,13 @@
 import type { Transaction, Category } from '../transactions/types';
 import type { BudgetMap } from './store';
+import { REFERENCE_NOW, sameMonth } from '../../lib/date';
+import { formatIndianNumber } from '../../lib/money';
 
 /**
  * Budget derivation. Like the dashboard layer, every figure is COMPUTED from
  * the Transactions V1 ledger against the caps in the budget store. No separate
  * budget dataset exists.
  */
-export const REFERENCE_NOW = new Date();
-
-function sameMonth(iso: string, ref: Date): boolean {
-  const d = new Date(iso + 'T00:00:00');
-  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
-}
 
 export interface CategoryBudget {
   category: Category;
@@ -121,10 +117,10 @@ export function suggestionFor(b: CategoryBudget): string {
   if (b.cap === 0) return 'No budget set yet. Add a monthly limit to start tracking this category.';
   if (b.status === 'over') {
     const over = b.spent - b.cap;
-    return `You're ₹${over.toLocaleString('en-IN')} over this month. Consider raising the limit or trimming spend here.`;
+    return `You're ₹${formatIndianNumber(over)} over this month. Consider raising the limit or trimming spend here.`;
   }
   if (b.status === 'watch') {
     return `You've used ${Math.round(b.ratio * 100)}% of this budget. Pace carefully through the rest of the month.`;
   }
-  return `Comfortably on track — ₹${b.remaining.toLocaleString('en-IN')} still available this month.`;
+  return `Comfortably on track — ₹${formatIndianNumber(b.remaining)} still available this month.`;
 }

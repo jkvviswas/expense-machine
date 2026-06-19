@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { persist } from '../../lib/persist';
+import { generateId } from '../../lib/id';
 
 /**
  * ============================================================================
@@ -90,7 +91,7 @@ export const notificationsStore = {
   /** Add an event notification (import complete, report exported, etc.). */
   addEvent(n: Omit<AppNotification, 'id' | 'at' | 'read'> & { id?: string }) {
     const item: AppNotification = {
-      id: n.id ?? `evt-${Date.now().toString(36)}`,
+      id: n.id ?? generateId('evt'),
       kind: n.kind,
       tone: n.tone,
       title: n.title,

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CountUpMoney } from './CountUpMoney';
+import { formatMoneyCompact } from '../../../lib/money';
 
 function TrendBadge({ net, prevNet }: { net: number; prevNet: number }) {
   if (prevNet === 0) return null;
@@ -42,10 +43,7 @@ export function NetPositionMoment({
     return () => ro.disconnect();
   }, []);
 
-  const amtStr = (() => {
-    const s = Math.abs(net).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-    return net < 0 ? `−₹${s}` : `₹${s}`;
-  })();
+  const amtStr = formatMoneyCompact(net);
   const fontSize = Math.min(Math.max((innerW * 0.78) / (amtStr.length * 0.62), 14), 38);
 
   return (

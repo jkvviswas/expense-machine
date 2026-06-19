@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { CategorySelect } from '../../import/components/CategorySelect';
 import { transactionsStore } from '../store';
 import type { Category, PaymentMethod } from '../types';
+import { todayIso } from '../../../lib/date';
 
 interface AddTransactionProps {
   open: boolean;
@@ -19,14 +20,14 @@ export function AddTransaction({ open, onClose, accountOptions }: AddTransaction
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [category, setCategory] = useState<Category>('Uncategorized');
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayIso);
   const [account, setAccount] = useState('');
   const [method, setMethod] = useState<PaymentMethod>('UPI');
   const [notes, setNotes] = useState('');
 
   const reset = () => {
     setMerchant(''); setAmount(''); setType('expense'); setCategory('Uncategorized');
-    setDate(new Date().toISOString().slice(0, 10)); setAccount(''); setMethod('UPI'); setNotes('');
+    setDate(todayIso()); setAccount(''); setMethod('UPI'); setNotes('');
   };
 
   const valid = merchant.trim() !== '' && amount.trim() !== '' && Number(amount) > 0;

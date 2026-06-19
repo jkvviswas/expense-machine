@@ -2,6 +2,7 @@ import type { Transaction, Category } from '../transactions/types';
 import { txnType } from '../transactions/types';
 import { budgetStore } from '../budgets/store';
 import type { Commitment } from '../commitments/store';
+import { REFERENCE_NOW, sameMonth } from '../../lib/date';
 
 /**
  * ============================================================================
@@ -14,12 +15,6 @@ import type { Commitment } from '../commitments/store';
  * Reference "now" matches the ledger's sample window (early June 2026) so the
  * mock data produces a meaningful current-month view.
  */
-export const REFERENCE_NOW = new Date();
-
-function sameMonth(iso: string, ref: Date): boolean {
-  const d = new Date(iso + 'T00:00:00');
-  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
-}
 
 /** Income / spending for the reference month. */
 export function monthlyFigures(txns: Transaction[], ref: Date = REFERENCE_NOW) {

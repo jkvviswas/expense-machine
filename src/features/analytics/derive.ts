@@ -1,4 +1,6 @@
 import type { Transaction, Category } from '../transactions/types';
+import { REFERENCE_NOW, monthKeyOf } from '../../lib/date';
+import { formatIndianNumber } from '../../lib/money';
 
 /**
  * ============================================================================
@@ -8,7 +10,7 @@ import type { Transaction, Category } from '../transactions/types';
  * from the Transactions ledger. No separate dataset. These power both the
  * Analytics module and the Reports module.
  */
-export const REFERENCE_NOW = new Date();
+export { REFERENCE_NOW };
 
 export interface MonthKey {
   key: string; // "2026-05"
@@ -16,10 +18,6 @@ export interface MonthKey {
   labelFull: string; // "May" → full month name for premium summaries
   year: number;
   month: number; // 0-indexed
-}
-
-function monthKeyOf(iso: string): string {
-  return iso.slice(0, 7);
 }
 
 export function monthMeta(key: string): MonthKey {
@@ -220,7 +218,7 @@ export function generateInsights(txns: Transaction[]): Insight[] {
     const m = merchants[0];
     out.push({
       id: 'top-merchant',
-      text: `${m.merchant} is your most-used merchant — ₹${m.total.toLocaleString('en-IN')} across ${m.count} transactions.`,
+      text: `${m.merchant} is your most-used merchant — ₹${formatIndianNumber(m.total)} across ${m.count} transactions.`,
       tone: 'neutral',
     });
   }

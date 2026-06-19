@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import { persist, STORAGE_KEYS } from '../../lib/persist';
 import { transactionsStore } from '../transactions/store';
+import { generateId } from '../../lib/id';
+import { todayIso } from '../../lib/date';
 
 export const LOAN_TYPES = [
   'Personal Loan',
@@ -70,12 +72,12 @@ export const loansStore = {
    * in the single ledger.
    */
   add(loan: Omit<Loan, 'id'>): Loan {
-    const created: Loan = { createdAt: new Date().toISOString(), ...loan, id: `loan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}` };
+    const created: Loan = { createdAt: new Date().toISOString(), ...loan, id: generateId('loan') };
     loans = [created, ...loans];
     save();
     if (!created.isExisting && created.principal > 0) {
       transactionsStore.add({
-        date: created.startDate || new Date().toISOString().slice(0, 10),
+        date: created.startDate || todayIso(),
         merchant: created.name,
         description: `${created.loanType} disbursement`,
         amount: Math.abs(created.principal),

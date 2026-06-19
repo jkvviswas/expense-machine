@@ -3,6 +3,7 @@ import { commitmentsStore, type Commitment } from './store';
 import { loansStore } from '../loans/store';
 import { successToastStore } from '../transactions/successToast';
 import { formatMoneyFull, formatDate } from '../import/format';
+import { todayIso } from '../../lib/date';
 
 /** Advance an ISO date by one calendar month. */
 function nextMonth(iso: string): string {
@@ -12,7 +13,7 @@ function nextMonth(iso: string): string {
 }
 
 export function markCommitmentPaid(c: Commitment, accountId?: string) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
 
   transactionsStore.add({
     date: today,

@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { persist } from '../../lib/persist';
 import { emailService } from '../../lib/email';
+import { generateId } from '../../lib/id';
 import {
   bridgeConfigured,
   bridgeRegister,
@@ -174,7 +175,7 @@ export const authStore = {
 
     const salt = randomSalt();
     const account: StoredAccount = {
-      id: `u-${Date.now().toString(36)}`,
+      id: generateId('u'),
       name: trimmedName,
       username: username?.trim() || trimmedName,
       email: trimmedEmail,
