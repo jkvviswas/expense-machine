@@ -41,7 +41,8 @@ export function AskPanel({ txns }: { txns: Transaction[] }) {
       const provider = getAskProvider();
       const answer = await provider.ask(q, txns);
       setTurns((t) => [...t, { role: 'machine', text: answer.text, answer }]);
-    } catch {
+    } catch (err: unknown) {
+      console.error('[AskPanel] Analysis failed:', err);
       setTurns((t) => [...t, { role: 'machine', text: 'Something went wrong analysing that. Please try rephrasing.' }]);
     } finally {
       setBusy(false);

@@ -53,7 +53,8 @@ export function ReportsPage() {
         const pages = doc.getNumberOfPages();
         const bytes = (doc.output('arraybuffer') as ArrayBuffer).byteLength;
         if (alive) setPdfMeta({ pages, sizeKb: Math.round(bytes / 1024) });
-      } catch {
+      } catch (err: unknown) {
+        console.error('[Reports] PDF preview generation failed:', err);
         if (alive) setPdfMeta(null);
       }
     })();

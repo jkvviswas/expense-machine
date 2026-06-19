@@ -73,13 +73,12 @@ class CloudRepository implements Repository {
       const { data: auth } = await supabase.auth.getUser();
       const userId = auth.user?.id;
       if (!userId) return;
-      if (domain === 'budgets') {
-        await supabase.from('budgets').upsert({ user_id: userId, caps: value });
-      } else {
-        await supabase.from('settings').upsert({ user_id: userId, data: value });
-      }
-    } catch {
-      // Offline / not signed in — local write already succeeded, so this is safe.
+      const table = domain === 'budgets' ? 'budgets' : 'settings';
+      const column = domain === 'budgets' ? 'caps' : 'data';
+      const { error } = await supabase.from(table).upsert({ user_id: userId, [column]: value });
+      if (error) console.warn(`[CloudRepository] Upsert failed for ${domain}:`, error.message);
+    } catch (err: unknown) {
+      console.warn('[CloudRepository] Remote write failed for', domain, '— local data preserved:', err);
     }
   }
 }

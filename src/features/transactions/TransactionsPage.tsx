@@ -80,7 +80,9 @@ export function TransactionsPage() {
   const exportSelection = useCallback(() => {
     const chosen = filtered.filter((t) => selected.has(t.id));
     const rows = chosen.length > 0 ? chosen : filtered;
-    void exportTransactionsXlsx(rows);
+    void exportTransactionsXlsx(rows).catch((err: unknown) => {
+      console.error('[Export] XLSX export failed:', err);
+    });
   }, [filtered, selected]);
 
   const deleteOne = useCallback((t: Transaction) => {

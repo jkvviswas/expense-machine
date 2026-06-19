@@ -35,11 +35,15 @@ applyThemeAtBoot();
 // locked calculation — they only restore the user's working state (budget caps
 // via the store's public API, and the working ledger) from localStorage.
 hydrateBudgets();
-void ensureHydrated().then(() => {
-  // Generate budget / large-expense alerts once the ledger is available so the
-  // notification bell reflects the user's real position immediately.
-  runAlertEngine();
-});
+void ensureHydrated()
+  .then(() => {
+    // Generate budget / large-expense alerts once the ledger is available so the
+    // notification bell reflects the user's real position immediately.
+    runAlertEngine();
+  })
+  .catch((err: unknown) => {
+    console.error('[App] Transaction hydration failed:', err);
+  });
 
 export default function App() {
   return (

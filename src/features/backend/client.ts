@@ -37,7 +37,10 @@ export function getSupabase(): Promise<SupabaseClient | null> {
         },
       }),
     )
-    .catch(() => null);
+    .catch((err: unknown) => {
+      console.error('[Supabase] Failed to initialise client:', err);
+      return null;
+    });
   return clientPromise;
 }
 
