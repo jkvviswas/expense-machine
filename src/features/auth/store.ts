@@ -73,20 +73,36 @@ function writeResetTokens(list: ResetToken[]) {
   persist.write(RESET_TOKENS_KEY, list);
 }
 function genToken(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  const buf = new Uint8Array(24);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 let state: AuthState = { user: null, ready: false };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
-// --- demo-grade hashing (NOT production security) ---------------------------
+// --- password hashing (Web Crypto PBKDF2) -----------------------------------
 function randomSalt(): string {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  const buf = new Uint8Array(16);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Deterministic, fast string hash (FNV-1a). Demo-grade only. */
-function hash(input: string): string {
+async function hashPassword(password: string, salt: string): Promise<string> {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits'],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100_000, hash: 'SHA-256' },
+    keyMaterial, 256,
+  );
+  return Array.from(new Uint8Array(bits), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Synchronous legacy hash kept ONLY for verifying pre-existing accounts. */
+function legacyHash(input: string): string {
   let h = 0x811c9dc5;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);
@@ -94,9 +110,8 @@ function hash(input: string): string {
   }
   return (h >>> 0).toString(16);
 }
-
-function hashPassword(password: string, salt: string): string {
-  return hash(`${salt}::${password}::em`);
+function legacyHashPassword(password: string, salt: string): string {
+  return legacyHash(`${salt}::${password}::em`);
 }
 
 // --- storage helpers ---------------------------------------------------------
@@ -154,7 +169,7 @@ export const authStore = {
   },
 
   /** Register a new account and sign in. Throws AuthError on conflict/validation. */
-  register(name: string, email: string, password: string, username?: string): AuthUser {
+  async register(name: string, email: string, password: string, username?: string): Promise<AuthUser> {
     const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = name.trim();
     // Username defaults to the name (compacted) if not explicitly provided.
@@ -180,7 +195,7 @@ export const authStore = {
       email: trimmedEmail,
       createdAt: new Date().toISOString(),
       salt,
-      passHash: hashPassword(password, salt),
+      passHash: await hashPassword(password, salt),
     };
     writeAccounts([...accounts, account]);
     persist.write(SESSION_KEY, account.id);
@@ -190,13 +205,29 @@ export const authStore = {
   },
 
   /** Sign in by email OR username + password. Throws AuthError on bad credentials. */
-  login(identifier: string, password: string): AuthUser {
+  async login(identifier: string, password: string): Promise<AuthUser> {
     const id = identifier.trim().toLowerCase();
     const account = readAccounts().find(
       (a) => a.email === id || a.username.toLowerCase() === id,
     );
-    if (!account || account.passHash !== hashPassword(password, account.salt))
-      throw new AuthError('Those credentials are incorrect.');
+    if (!account) throw new AuthError('Those credentials are incorrect.');
+    // Try modern PBKDF2 hash first, then fall back to legacy for migration.
+    const modernHash = await hashPassword(password, account.salt);
+    let matched = account.passHash === modernHash;
+    if (!matched) {
+      matched = account.passHash === legacyHashPassword(password, account.salt);
+      if (matched) {
+        // Migrate legacy hash to PBKDF2 transparently on successful login.
+        const accounts = readAccounts();
+        const idx = accounts.findIndex((a) => a.id === account.id);
+        if (idx >= 0) {
+          const newSalt = randomSalt();
+          accounts[idx] = { ...accounts[idx], salt: newSalt, passHash: await hashPassword(password, newSalt) };
+          writeAccounts(accounts);
+        }
+      }
+    }
+    if (!matched) throw new AuthError('Those credentials are incorrect.');
     persist.write(SESSION_KEY, account.id);
     state = { user: toPublic(account), ready: true };
     emit();
@@ -230,7 +261,7 @@ export const authStore = {
       }
     }
     // Fallback: local
-    return this.register(name, email, password, username);
+    return await this.register(name, email, password, username);
   },
 
   /** Login via Supabase when configured, else local. */
@@ -247,7 +278,7 @@ export const authStore = {
       }
     }
     // Fallback: local
-    return this.login(identifier, password);
+    return await this.login(identifier, password);
   },
 
   /** Logout from Supabase (if configured) and clear local session. */
@@ -332,7 +363,7 @@ export const authStore = {
    * token is missing, expired, or already used (one-time + expiry + reuse
    * prevention all enforced here).
    */
-  resetPassword(token: string, newPassword: string): void {
+  async resetPassword(token: string, newPassword: string): Promise<void> {
     if (newPassword.length < 6) throw new AuthError('Password must be at least 6 characters.');
 
     const tokens = readResetTokens();
@@ -347,7 +378,7 @@ export const authStore = {
     if (accIdx < 0) throw new AuthError('This reset link is invalid.');
 
     const salt = randomSalt();
-    accounts[accIdx] = { ...accounts[accIdx], salt, passHash: hashPassword(newPassword, salt) };
+    accounts[accIdx] = { ...accounts[accIdx], salt, passHash: await hashPassword(newPassword, salt) };
     writeAccounts(accounts);
 
     // Mark this token used and invalidate the user's session, requiring
